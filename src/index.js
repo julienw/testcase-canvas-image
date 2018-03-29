@@ -19,6 +19,30 @@ function* yieldFiles(dataTransfer) {
   }
 }
 
+function appendSideBySide(original, transformed) {
+  const result = document.querySelector('.result');
+  const img1 = document.createElement('img');
+  img1.src = URL.createObjectURL(original);
+
+  const img2 = document.createElement('img');
+  img2.src = transformed.thumb;
+
+  const container = document.createElement('div');
+  container.className = 'container';
+
+  container.appendChild(img1);
+  container.appendChild(img2);
+  result.appendChild(container);
+}
+
+function displayFilesSideBySide(originals, transformeds) {
+  for (let i = 0; i < originals.length; i++) {
+    const original = originals[i];
+    const transformed = transformeds[i];
+    appendSideBySide(original, transformed);
+  }
+}
+
 const dropElt = document.querySelector('.drop-here');
 dropElt.addEventListener('dragenter', e => {
   e.preventDefault();
@@ -29,19 +53,26 @@ dropElt.addEventListener('dragenter', e => {
     e.dataTransfer.dropEffect = "none";
   }
 });
+
 dropElt.addEventListener('dragleave', e => {
   dropElt.classList.remove('dragged-hover');
 });
+
 dropElt.addEventListener('dragover', e => {
   e.preventDefault();
 });
+
 dropElt.addEventListener('drop', async e => {
   e.preventDefault();
   dropElt.classList.remove('dragged-hover');
-  const result = await Promise.all(
-    Array.from(
-      yieldFiles(e.dataTransfer)
-    ).map(processImage)
+
+  const originalFiles = Array.from(
+    yieldFiles(e.dataTransfer)
   );
-  console.log(result);
+
+  const result = await Promise.all(
+    originalFiles.map(processImage)
+  );
+
+  displayFilesSideBySide(originalFiles, result);
 });
