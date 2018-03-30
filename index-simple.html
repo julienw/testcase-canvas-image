@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='initial-scale=1'>
+  <style type="text/css" media="all">
+    .drop-here {
+      background: #fdd;
+      border: 1px solid black;
+      width: 500px;
+      height: 500px;
+    }
+
+    .dragged-hover {
+      background: #dfd;
+    }
+
+    img {
+      width: 256px;
+      height: 256px;
+      object-contain: cover;
+    }
+  </style>
+</head>
+
+<body>
+  <div>Drop images here:</div>
+  <div class='drop-here'></div>
+  <div class='picker'>
+    <input type="file" id='file-picker' multiple accept="image/jpeg,image/png" />
+  </div>
+  <div class='result'></div>
+  <script type="application/javascript">
+    function containFiles(dataTransfer) {
+      for (const file of yieldFiles(dataTransfer)) {
+        return true;
+      }
+      return false;
+    }
+
+    function* yieldFiles(dataTransfer) {
+      if (dataTransfer.items) {
+        for (var item of dataTransfer.items) {
+          if (item.kind === "file") {
+            yield item.getAsFile();
+          }
+        }
+      } else {
+        yield* dataTransfer.files;
+      }
+    }
+
+    function appendSideBySide(original) {
+      const result = document.querySelector('.result');
+      const img1 = document.createElement('img');
+      img1.src = URL.createObjectURL(original);
+
+      const container = document.createElement('div');
+      container.className = 'container';
+
+      container.appendChild(img1);
+      result.appendChild(container);
+    }
+
+    function displayFilesSideBySide(originals) {
+      for (let i = 0; i < originals.length; i++) {
+        const original = originals[i];
+        appendSideBySide(original);
+      }
+    }
+
+    const dropElt = document.querySelector('.drop-here');
+    dropElt.addEventListener('dragenter', e => {
+      e.preventDefault();
+      if (containFiles(e.dataTransfer)) {
+        e.dataTransfer.dropEffect = "copy";
+        dropElt.classList.add('dragged-hover');
+      } else {
+        e.dataTransfer.dropEffect = "none";
+      }
+    });
+
+    dropElt.addEventListener('dragleave', e => {
+      dropElt.classList.remove('dragged-hover');
+    });
+
+    dropElt.addEventListener('dragover', e => {
+      e.preventDefault();
+    });
+
+    dropElt.addEventListener('drop', async e => {
+      e.preventDefault();
+      dropElt.classList.remove('dragged-hover');
+
+      const originalFiles = Array.from(
+        yieldFiles(e.dataTransfer)
+      );
+
+      displayFilesSideBySide(originalFiles);
+    });
+
+    const filePicker = document.querySelector('#file-picker')
+    filePicker.addEventListener('change', async e => {
+      e.preventDefault();
+      const originalFiles = Array.from(e.target.files)
+
+      displayFilesSideBySide(originalFiles);
+    })
+  </script>
+</body>
+
+</html>
