@@ -76,3 +76,15 @@ dropElt.addEventListener('drop', async e => {
 
   displayFilesSideBySide(originalFiles, result);
 });
+
+const filePicker = document.querySelector('#file-picker')
+filePicker.addEventListener('change', async e => {
+  e.preventDefault();
+  const originalFiles = Array.from(e.target.files)
+
+  const result = await Promise.all(
+    originalFiles.map(processImage)
+  );
+
+  displayFilesSideBySide(originalFiles, result);
+})
